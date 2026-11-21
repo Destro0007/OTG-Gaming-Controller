@@ -151,15 +151,24 @@ class MainActivity : Activity() {
     }
 
     private fun refreshDevices() {
-        val list = InputDevice.getDeviceIds().mapNotNull { InputDevice.getDevice(it) }
-        devices.text = if (list.isEmpty()) "No external input devices detected. Connect a USB OTG device and refresh."
-        else list.joinToString("\n") { d ->
-            val types = mutableListOf<String>()
-            if (d.sources and InputDevice.SOURCE_KEYBOARD == InputDevice.SOURCE_KEYBOARD) types.add("Keyboard")
-            if (d.sources and InputDevice.SOURCE_MOUSE == InputDevice.SOURCE_MOUSE) types.add("Mouse")
-            if (d.sources and InputDevice.SOURCE_GAMEPAD == InputDevice.SOURCE_GAMEPAD) types.add("Gamepad")
-            if (d.sources and InputDevice.SOURCE_JOYSTICK == InputDevice.SOURCE_JOYSTICK) types.add("Joystick")
-            "${d.name} • ${types.ifEmpty { listOf("Other input") }.joinToString(", ")}"
+        val list: List<InputDevice> = InputDevice.getDeviceIds()
+            .map { deviceId -> InputDevice.getDevice(deviceId) }
+            .filterNotNull()
+
+        devices.text = if (list.isEmpty()) {
+            "No external input devices detected. Connect a USB OTG device and refresh."
+        } else {
+            list.joinToString("\\n") { device ->
+                val sources = device.sources
+                val types = mutableListOf<String>()
+
+                if ((sources and InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD) types.add("Keyboard")
+                if ((sources and InputDevice.SOURCE_MOUSE) == InputDevice.SOURCE_MOUSE) types.add("Mouse")
+                if ((sources and InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) types.add("Gamepad")
+                if ((sources and InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK) types.add("Joystick")
+
+                "${device.name} • ${types.ifEmpty { listOf("Other input") }.joinToString(", ")}"
+            }
         }
     }
 
